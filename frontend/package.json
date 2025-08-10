@@ -12,12 +12,9 @@
     "@headlessui/react": "^1.7.18",
     "@heroicons/react": "^2.1.5",
     "axios": "^1.6.8",
-    "chart.js": "^4.4.3",
-    "chartjs-adapter-date-fns": "^3.0.0",
-    "chartjs-chart-financial": "^3.3.0",
+    "lightweight-charts": "^4.2.0",
     "pocketbase": "^0.21.1",
     "react": "^18.3.1",
-    "react-chartjs-2": "^5.2.0",
     "react-dom": "^18.3.1",
     "react-router-dom": "^6.23.1"
   },

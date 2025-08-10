@@ -1,46 +1,46 @@
 import { useEffect, useRef, useState } from 'react';
-import { Chart, TimeScale, Tooltip, Legend, LinearScale } from 'chart.js';
-import 'chartjs-adapter-date-fns';
-import { CandlestickController, CandlestickElement } from 'chartjs-chart-financial';
+import { createChart } from 'lightweight-charts';
 import { api } from '../services/api';
 
-Chart.register(TimeScale, LinearScale, Tooltip, Legend, CandlestickController, CandlestickElement);
-
 export default function PriceChart({ symbol, days = 1 }) {
-  const canvasRef = useRef(null);
+  const containerRef = useRef(null);
+  const chartRef = useRef(null);
+  const seriesRef = useRef(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
-  const chartRef = useRef(null);
+
+  useEffect(() => {
+    if (!containerRef.current) return;
+    chartRef.current = createChart(containerRef.current, {
+      height: 260,
+      layout: { background: { color: '#0b0f16' }, textColor: '#e6edf3' },
+      grid: { vertLines: { color: '#1f2937' }, horzLines: { color: '#1f2937' } },
+      rightPriceScale: { borderColor: '#1f2937' },
+      timeScale: { borderColor: '#1f2937' },
+    });
+    seriesRef.current = chartRef.current.addCandlestickSeries({ upColor: '#22c55e', downColor: '#ef4444', borderVisible: false, wickUpColor: '#22c55e', wickDownColor: '#ef4444' });
+    const handleResize = () => chartRef.current.applyOptions({ width: containerRef.current.clientWidth });
+    handleResize();
+    window.addEventListener('resize', handleResize);
+    return () => { window.removeEventListener('resize', handleResize); chartRef.current?.remove(); chartRef.current = null; };
+  }, []);
 
   useEffect(() => {
     let mounted = true;
     setLoading(true); setError('');
     api.get(`/chart/${symbol}?days=${days}`).then(res => {
       if (!mounted) return;
-      const data = res.data || [];
-      const items = data.map(([t, o, h, l, c]) => ({ x: new Date(t), o, h, l, c }));
-      if (chartRef.current) {
-        chartRef.current.destroy();
-        chartRef.current = null;
-      }
-      const ctx = canvasRef.current.getContext('2d');
-      chartRef.current = new Chart(ctx, {
-        type: 'candlestick',
-        data: { datasets: [{ label: `${symbol} / USD`, data: items, borderColor: '#7cc7ff' }] },
-        options: {
-          responsive: true,
-          plugins: { legend: { display: false } },
-          scales: {
-            x: { type: 'time', time: { unit: 'hour' } },
-            y: { beginAtZero: false },
-          },
-        },
-      });
+      const data = (res.data || []).map(([t, o, h, l, c]) => ({ time: Math.floor(t / 1000), open: o, high: h, low: l, close: c }));
+      seriesRef.current?.setData(data);
     }).catch(e => setError(e.response?.data?.error || e.message)).finally(() => mounted && setLoading(false));
-    return () => { mounted = false; if (chartRef.current) { chartRef.current.destroy(); chartRef.current = null; } };
+    return () => { mounted = false; };
   }, [symbol, days]);
 
-  if (loading) return <div>Загрузка графика...</div>;
   if (error) return <div className="text-red">{error}</div>;
-  return <canvas ref={canvasRef} height={240} />;
+  return (
+    <div>
+      {loading && <div>Загрузка графика...</div>}
+      <div ref={containerRef} style={{ width: '100%', height: 260 }} />
+    </div>
+  );
 }
