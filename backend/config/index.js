@@ -11,4 +11,6 @@ export const config = {
   startBalance: Number(process.env.START_BALANCE || 10000),
   adminEmail: process.env.PB_ADMIN_EMAIL || '',
   adminPassword: process.env.PB_ADMIN_PASSWORD || '',
+  rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS || 60000),
+  rateLimitMax: Number(process.env.RATE_LIMIT_MAX || 1000),
 };

@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { api } from '../services/api';
 import { pb } from '../services/pb';
 import TradeModal from '../components/TradeModal.jsx';
@@ -11,20 +11,26 @@ export default function Dashboard() {
   const [balance, setBalance] = useState(pb.authStore.model?.balance ?? 0);
   const [selectedSymbol, setSelectedSymbol] = useState('BTC');
   const [modal, setModal] = useState({ open: false, mode: 'buy' });
+  const refreshTimerRef = useRef(null);
+
+  const fetchCoins = async () => {
+    const r = await api.get('/cryptocurrencies');
+    setCoins(r.data);
+  };
 
   useEffect(() => {
     const load = async () => {
-      const [coinsRes] = await Promise.all([
-        api.get('/cryptocurrencies'),
-      ]);
-      setCoins(coinsRes.data);
+      await fetchCoins();
     };
     load().catch(() => {});
   }, []);
 
   useEffect(() => {
     const sub1 = pb.collection('cryptocurrencies').subscribe('*', () => {
-      api.get('/cryptocurrencies').then(r => setCoins(r.data)).catch(() => {});
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+      refreshTimerRef.current = setTimeout(() => {
+        fetchCoins().catch(() => {});
+      }, 800);
     });
     const sub2 = pb.collection('transactions').subscribe('*', (e) => {
       if (e.record?.user === pb.authStore.model?.id) {
@@ -35,7 +41,12 @@ export default function Dashboard() {
       if (e.record?.id === pb.authStore.model?.id) setBalance(e.record.balance);
     });
     reloadUserData();
-    return () => { pb.collection('cryptocurrencies').unsubscribe('*'); pb.collection('transactions').unsubscribe('*'); pb.collection('users').unsubscribe(pb.authStore.model?.id); };
+    return () => {
+      if (refreshTimerRef.current) clearTimeout(refreshTimerRef.current);
+      pb.collection('cryptocurrencies').unsubscribe('*');
+      pb.collection('transactions').unsubscribe('*');
+      pb.collection('users').unsubscribe(pb.authStore.model?.id);
+    };
   }, []);
 
   const reloadUserData = async () => {

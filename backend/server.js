@@ -12,9 +12,21 @@ import { resolveCoinIdBySymbol, fetchOHLC } from './services/coingeckoService.js
 
 const app = express();
 app.use(express.json());
-app.use(cors({ origin: config.corsOrigin, credentials: true }));
+
+const allowedOrigins = (config.corsOrigin || '').split(',').map(s => s.trim()).filter(Boolean);
+const corsOptions = {
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.includes('*') || allowedOrigins.includes(origin)) return callback(null, true);
+    return callback(new Error('CORS not allowed'), false);
+  },
+  credentials: true,
+};
+app.use(cors(corsOptions));
+app.options('*', cors(corsOptions));
+
 app.use(helmet());
-app.use(rateLimit({ windowMs: 60_000, max: 120 }));
+app.use(rateLimit({ windowMs: config.rateLimitWindowMs, max: config.rateLimitMax }));
 
 app.get('/health', (req, res) => res.json({ ok: true }));
 
