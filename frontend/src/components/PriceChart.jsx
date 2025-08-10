@@ -19,7 +19,11 @@ export default function PriceChart({ symbol, days = 1 }) {
       timeScale: { borderColor: '#1f2937' },
     });
     seriesRef.current = chartRef.current.addCandlestickSeries({ upColor: '#22c55e', downColor: '#ef4444', borderVisible: false, wickUpColor: '#22c55e', wickDownColor: '#ef4444' });
-    const handleResize = () => chartRef.current.applyOptions({ width: containerRef.current.clientWidth });
+    const handleResize = () => {
+      if (chartRef.current && containerRef.current) {
+        chartRef.current.applyOptions({ width: containerRef.current.clientWidth });
+      }
+    };
     handleResize();
     window.addEventListener('resize', handleResize);
     return () => { window.removeEventListener('resize', handleResize); chartRef.current?.remove(); chartRef.current = null; };

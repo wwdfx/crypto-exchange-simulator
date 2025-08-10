@@ -34,12 +34,20 @@ export async function resolveCoinIdBySymbol(symbol) {
   return match?.id || null;
 }
 
+const ohlcCache = new Map(); // key: `${id}:${days}` -> { ts, data }
+const OHLC_TTL_MS = 60_000; // 60s cache
+
 export async function fetchOHLC(coinId, days = 1) {
+  const key = `${coinId}:${days}`;
+  const now = Date.now();
+  const cached = ohlcCache.get(key);
+  if (cached && now - cached.ts < OHLC_TTL_MS) return cached.data;
+
   const url = `${config.coingeckoApiUrl}/coins/${coinId}/ohlc`;
   const res = await axios.get(url, {
     params: { vs_currency: 'usd', days },
     timeout: 15000,
   });
-  // Returns array of [timestamp, open, high, low, close]
+  ohlcCache.set(key, { ts: now, data: res.data });
   return res.data;
 }
