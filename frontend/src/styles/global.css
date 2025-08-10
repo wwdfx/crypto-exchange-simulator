@@ -1,0 +1,20 @@
+:root { color-scheme: dark; }
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+body { font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji"; background: #0b0f16; color: #e6edf3; }
+a { color: #7cc7ff; }
+button { cursor: pointer; }
+.container { max-width: 1200px; margin: 0 auto; padding: 1rem; }
+.card { background: #111827; border: 1px solid #1f2937; border-radius: 10px; padding: 1rem; }
+.input { background: #0f172a; border: 1px solid #1f2937; border-radius: 8px; padding: 0.6rem 0.8rem; color: #e6edf3; }
+.btn { background: #1f2937; border: 1px solid #334155; border-radius: 8px; padding: 0.6rem 0.9rem; color: #e6edf3; }
+.btn.primary { background: #2563eb; border-color: #1d4ed8; }
+.grid { display: grid; gap: 1rem; }
+.nav { display:flex; align-items:center; justify-content:space-between; padding: 0.8rem 1rem; border-bottom: 1px solid #1f2937; position: sticky; top: 0; background:#0b0f16; z-index:10; }
+.sidebar { width: 240px; padding: 1rem; border-right: 1px solid #1f2937; }
+.main { flex:1; padding: 1rem; }
+.layout { display:flex; min-height: calc(100vh - 52px); }
+.table { width: 100%; border-collapse: collapse; }
+.table th, .table td { border-bottom: 1px solid #1f2937; padding: 0.6rem; text-align: left; }
+.text-green { color: #22c55e; }
+.text-red { color: #ef4444; }
